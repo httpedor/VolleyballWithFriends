@@ -1,0 +1,17 @@
+{
+    "C_Cpp.default.includePath": [
+        "include"
+    ],
+    "files.associations": {
+        "sdl.h": "c",
+        "teste.h": "c",
+        "sdl_rect.h": "c",
+        "stdio.h": "c",
+        "game.h": "c",
+        "math.h": "c",
+        "game_math.h": "c",
+        "camera.h": "c",
+        "animation.h": "c",
+        "player.h": "c"
+    }
+}

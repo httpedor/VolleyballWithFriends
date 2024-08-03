@@ -1,0 +1,40 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Clean",
+            "group": "build",
+            "type": "shell",
+            "command": "del /S /f /q bin\\* & del /S /f /q build\\*",
+        },
+        {
+            "label": "Build Debug",
+            "group": "build",
+            "type": "shell",
+            "command": "mingw32-make debug",
+            "dependsOn": "Clean Bin"
+        },
+        {
+            "label": "Build Release",
+            "group": "build",
+            "type": "shell",
+            "command": "mingw32-make"
+        },
+        {
+            "label": "Run Release",
+            "type": "shell",
+            "dependsOn": [
+                "Build Release"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/bin"
+            },
+            "command": "${workspaceFolder}\\bin\\main.exe",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        }
+    ]
+}
