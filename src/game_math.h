@@ -30,12 +30,15 @@ Vector2 Vector2Sub(Vector2 a, Vector2 b);
 Vector2 Vector2Mul(Vector2 a, float scalar);
 Vector2 Vector2EisenMul(Vector2 a, Vector2 b);
 Vector2 Vector2Div(Vector2 a, float scalar);
-float Vector2Dot(Vector2 a, Vector2 b);
-Vector2 Vector2Perpendicular(Vector2 a);
-float Vector2Length(Vector2 a);
-float Vector2Distance(Vector2 a, Vector2 b);
-Vector2 Vector2Normalize(Vector2 a);
-Vector2 Vector2Lerp(Vector2 a, Vector2 b, double t);
+float Vector2Dot(Vector2 a, Vector2 b); // produto escalar 
+Vector2 Vector2Perpendicular(Vector2 a); 
+float Vector2Length(Vector2 a); //tamanho
+float Vector2Distance(Vector2 a, Vector2 b);// distancia entre dois vetores
+Vector2 Vector2Normalize(Vector2 a); //deixa um vetor de 0 a 1 
+Vector2 Vector2Lerp(Vector2 a, Vector2 b, double t); //linear interpolate de (0,0) 
+/*(0, 0) -> (100, 100)
+t = 0.5 (50, 50)*/
+
 
 Vector2 Rect2DCenter(Rect2D r);
 

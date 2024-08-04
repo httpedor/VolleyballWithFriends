@@ -5,26 +5,26 @@
 #include "animation.h"
 
 typedef struct {
-    int id;
-    SDL_GameController* controller;
-    Animator* animator;
+    int id; //qual jogador é
+    SDL_GameController* controller; //qual controle
+    Animator* animator; //como animar
 
-    bool enabled;
-    bool jumping;
-    Vector2 moveDir;
-    float triggerStrength;
-    float deltaTrigger;
-    Vector2 aim;
-    uint32_t jumpStart;
+    bool enabled; //jogadores carregados 
+    bool jumping; //apertar espaço pra ser true 
+    Vector2 moveDir;//direção
+    float triggerStrength; //barra de força 0 a 1 ou 100
+    float deltaTrigger; // quanto a barra muda por frame 
+    Vector2 aim; // direção da mira 
+    uint32_t jumpStart; // qual ms o jogador starta o pulo 
 
-    uint32_t jumpMaxTime;
-    float armLength;
-    float totalStrength;
+    uint32_t jumpMaxTime; //tempo o pulo continua subindo
+    float armLength; //distancia da bola de encostar 
+    float totalStrength;//max do triggerstrength
 
-    Vector2 position;
-    float z;
-    Vector2 velocity;
-    float zVelocity;
+    Vector2 position; // em xy
+    float z; //altura
+    Vector2 velocity; //velocidade
+    float zVelocity; // velocidade no ar
 } Player;
 
 void PlayerInit(Player* player, int id);

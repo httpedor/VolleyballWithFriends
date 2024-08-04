@@ -97,7 +97,7 @@ int PlayerInput(Player* p, int notWithController)
     return notWithController;
 }
 
-void PlayerUpdate(Player* p, double dt)
+void PlayerUpdate(Player* p, double dt) //fisica do jogador
 {
     float maxMoveSpeed = 6.5 * PIXELS_PER_METER;
 
@@ -139,6 +139,7 @@ void PlayerUpdate(Player* p, double dt)
         AnimatorSetCurrentAnimationIndex(p->animator, 0);
 
     AnimatorUpdate(p->animator, dt);
+    //fazer um if pra bloquear a barreira 
 }
 
 void PlayerRender(Player* p)
