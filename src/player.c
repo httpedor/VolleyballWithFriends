@@ -1,13 +1,14 @@
 #include "player.h"
 #include "camera.h"
 #include "game.h"
+#include <stdio.h>
 
 void PlayerInit(Player* p, int id)
 {
     p->id = id;
     p->controller = NULL;
     p->enabled = false;
-    p->position.x = 0;
+    p->position.x = id % 2 == 0 ? -30 : 30;
     p->position.y = 10;
 
     p->velocity.x = 0;
@@ -99,6 +100,8 @@ int PlayerInput(Player* p, int notWithController)
 
 void PlayerUpdate(Player* p, double dt)
 {
+    Vector2 oldPos = p->position;
+
     float maxMoveSpeed = 6.5 * PIXELS_PER_METER;
 
 
@@ -125,6 +128,17 @@ void PlayerUpdate(Player* p, double dt)
         p->z = 0;
         p->zVelocity = 0;
     }
+
+    if (oldPos.x <= -15 && p->position.x > -25)
+        p->position.x = -15;
+    if (oldPos.x >= 15 && p->position.x < 25)
+        p->position.x = 15;
+    
+    if (p->position.y >= 70)
+        p->position.y = 70;
+
+    if (p->position.y <= -170)
+        p->position.y = -170;
 
     //Make the player sprite face the direction of movement
     if (p->velocity.x > 0)
