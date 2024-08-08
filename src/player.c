@@ -134,11 +134,20 @@ void PlayerUpdate(Player* p, double dt) //fisica do jogador
     if (oldPos.x >= 15 && p->position.x < 25)
         p->position.x = 15;
     
-    if (p->position.y >= 70)
-        p->position.y = 70;
+    if (p->position.x >= -15)
+        p->position.x = -30; //FAIXA DE VALORES ERA O PROBLEMA
+        //falar com o pedro sobre o seguinte, o B.O. ali era a faixa de valores
+        // agora como vamos organizar é outros 500
 
-    if (p->position.y <= -170)
-        p->position.y = -170;
+    if (p->position.y >= 100)
+        p->position.y = 95;
+
+    if (p->position.y <= -160)
+        p->position.y = -155;
+
+    if (p-> position.x <= -330)
+        p-> position.x = -320;
+    printf("%f, %f\n", p->position.x, p->position.y);
 
     //Make the player sprite face the direction of movement
     if (p->velocity.x > 0)
@@ -156,7 +165,7 @@ void PlayerUpdate(Player* p, double dt) //fisica do jogador
     //fazer um if pra bloquear a barreira 
     /*if (p->position.x != -320->320
     p->position.x = -319->319 
-)*/
+*/
 }
 
 void PlayerRender(Player* p)
