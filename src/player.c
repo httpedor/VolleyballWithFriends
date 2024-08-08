@@ -140,6 +140,9 @@ void PlayerUpdate(Player* p, double dt) //fisica do jogador
 
     AnimatorUpdate(p->animator, dt);
     //fazer um if pra bloquear a barreira 
+    /*if (p->position.x != -320->320
+    p->position.x = -319->319 
+)*/
 }
 
 void PlayerRender(Player* p)
