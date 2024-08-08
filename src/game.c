@@ -81,7 +81,7 @@ GameData* GameInit() {
     data->paused = 0;
     printf("Iniciando Janela\n");
     data->window = SDL_CreateWindow(
-                    "JOGO DANIEL(ele eh gostoso[o daniel nao o jogo])",
+                    "Rock Lee x Gaara ao som de linkin park",
                     SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                     640, 360,
                     SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
