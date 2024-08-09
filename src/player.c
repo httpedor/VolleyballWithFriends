@@ -3,12 +3,14 @@
 #include "game.h"
 #include <stdio.h>
 
+// 08/08 Pedro, tem um problema nesse código q n tem solução, o bgl da rede droppar fps naquele ponto da rede
+// 13/08 Bro, sla, é só dar sorte de ele n olhar tlgd, fuçei em tudo e nada mano, sla, só rezar agora
 void PlayerInit(Player* p, int id)
 {
     p->id = id;
     p->controller = NULL;
     p->enabled = false;
-    p->position.x = id % 2 == 0 ? -30 : 30;
+    p->position.x = id % 2 == 0 ? -30 : 30; //se o id for par é pra esquer
     p->position.y = 10;
 
     p->velocity.x = 0;
@@ -128,26 +130,39 @@ void PlayerUpdate(Player* p, double dt) //fisica do jogador
         p->z = 0;
         p->zVelocity = 0;
     }
-
+    /*MEDIDAS REDE CORNO*/
     if (oldPos.x <= -15 && p->position.x > -25)
-        p->position.x = -15;
+        p->position.x = -14;
     if (oldPos.x >= 15 && p->position.x < 25)
-        p->position.x = 15;
+        p->position.x = 14;
+        printf("%f \n", p->position.x);
     
     if (p->position.x >= -15)
         p->position.x = -30; //FAIXA DE VALORES ERA O PROBLEMA
         //falar com o pedro sobre o seguinte, o B.O. ali era a faixa de valores
-        // agora como vamos organizar é outros 500
+        // agora como vamos organizar é outros 500 */
+    
+    //VITOR ARRUMA A PORRA DA POSIÇÃO DE ALTURA VLW!
+    if (oldPos.x >= 300 && p->position.x > 290)
+        p->position.x = 299;
+    if (oldPos.y >= 110 && p->position.y > 90)
+        p->position.y = 109;
+    if (oldPos.y <= -160 && p->position.y < -155)
+        p->position.y = -159 ;
 
-    if (p->position.y >= 100)
-        p->position.y = 95;
+    
+    
+
+    
+   /* CIMA ABAIXO E ESQUERDA !!!!!  */
+    
 
     if (p->position.y <= -160)
-        p->position.y = -155;
+        p->position.y = -159;
 
     if (p-> position.x <= -330)
-        p-> position.x = -320;
-    printf("%f, %f\n", p->position.x, p->position.y);
+        p-> position.x = -329; 
+    //printf("%f, %f\n", p->position.x, p->position.y);
 
     //Make the player sprite face the direction of movement
     if (p->velocity.x > 0)
