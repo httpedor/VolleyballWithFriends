@@ -22,9 +22,12 @@ typedef struct {
     float totalStrength;//max do triggerstrength
 
     Vector2 position; // em xy
+    AABB collider; //pedro: 08/08(quase dia 9, é 23:50) eu to a tempos tentando fazer a colisão com a rede bonitinha, e não ta dando certo então eu vou usar a opção nuclear e usar aquelas funções de AABB que eu usei no meu RPG
     float z; //altura
     Vector2 velocity; //velocidade
     float zVelocity; // velocidade no ar
+
+    Vector2 debug;
 } Player;
 
 void PlayerInit(Player* player, int id);

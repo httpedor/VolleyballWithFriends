@@ -74,6 +74,7 @@ void pixel(SDL_Renderer* renderer, int x, int y)
 void CameraRenderCircle(Camera* camera, Vector2 pos, float radius, SDL_Renderer* renderer)
 {
     pos = ApplyCameraTransformV(camera, WorldToScreen(pos));
+    radius *= camera->zoom;
 
     for (int w = 0; w < radius * 2; w++)
     {
@@ -93,6 +94,7 @@ void CameraRenderCircle(Camera* camera, Vector2 pos, float radius, SDL_Renderer*
 void CameraRenderCircleOutline(Camera* camera, Vector2 pos, float radius, SDL_Renderer* renderer)
 {
     pos = ApplyCameraTransformV(camera, WorldToScreen(pos));
+    radius *= camera->zoom;
 
     for (int w = 0; w < radius * 2; w++)
     {
@@ -124,4 +126,12 @@ void CameraRenderTexture(Camera* camera, SDL_Texture* texture, Vector2 position,
 
     SDL_Rect dst = {position.x, position.y, size.x, size.y};
     SDL_RenderCopy(GameGetData()->renderer, texture, NULL, &dst);
+}
+
+void CameraRenderLine(Camera* camera, Line2D line, SDL_Renderer* renderer)
+{
+    Vector2 start = ApplyCameraTransformV(camera, WorldToScreen(line.start));
+    Vector2 end = ApplyCameraTransformV(camera, WorldToScreen(line.end));
+
+    SDL_RenderDrawLine(renderer, start.x, start.y, end.x, end.y);
 }

@@ -25,5 +25,6 @@ void CameraRenderCircle(Camera* camera, Vector2 pos, float radius, SDL_Renderer*
 void CameraRenderCircleOutline(Camera* camera, Vector2 pos, float radius, SDL_Renderer* renderer);
 void CameraRenderAnimator(Camera* camera, Animator* animator, Vector2 position, Vector2 size);
 void CameraRenderTexture(Camera* camera, SDL_Texture* texture, Vector2 position, Vector2 size);
+void CameraRenderLine(Camera* camera, Line2D line, SDL_Renderer* renderer);
 
 #endif

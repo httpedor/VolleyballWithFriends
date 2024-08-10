@@ -3,6 +3,7 @@
 #include "game.h"
 #include "camera.h"
 #include <SDL_ttf.h>
+#include <math.h>
 
 //TODO: Jumping throws ball faster
 //TODO: If the right stick is up, it's a set, if it's down, it's a spike
@@ -15,8 +16,6 @@
 
 //TODO: When passing the ball, there will be a circle inside the player. When an outer circle hits the inner circle, you have to press a button to make the perfect pass.
 //      You can only pass when the ball is inside the outer circle, but it will be shit if the outer circle doesn't hit the inner circle
-
-#define DEBUG
 
 GameData* data;
 
@@ -60,6 +59,11 @@ Rect2D GameGetCameraRect() {
     return (Rect2D){data->camera.position.x, data->camera.position.y, data->screenSize.x / data->camera.zoom, data->screenSize.y / data->camera.zoom};
 }
 
+double GameGetTimeScale()
+{
+    return data->timeScale;
+}
+
 Vector2 GetMousePosScreen()
 {
     SDL_Point mousePos;
@@ -77,6 +81,7 @@ GameData* GameInit() {
     data = (GameData*)malloc(sizeof(GameData));
 
     data->deltaTime = 0;
+    data->timeScale = 1;
     data->shouldQuit = 0;
     data->paused = 0;
     printf("Iniciando Janela\n");
@@ -98,8 +103,13 @@ GameData* GameInit() {
         return 0;
     }
 
+    //pedro: Originalmente eu não fazia isso e meu sistem de câmera fazia com que quem tivesse monitor maior visse mais do jogo
+    //mas daí eu percebi que eu sei o tamanho do mapa e cabe tudo numa tela 16:9, então eu fiz isso
+    //teve até o efeito das barrinhas laterias pretas, que eu achei bonito pq eu re-zerei Undertale esses dias
     SDL_RenderSetLogicalSize(data->renderer, 640, 360);
 
+    //Originalmente eu ia usar a fonte de Undertale, mas como o SDL_RenderSetLogicalSize só escala o jogo sem anti-aliasing, até a fonte que é só uma arial parece que eh pixel art
+    //obrigado SDL S2
     data->font = TTF_OpenFont("arial.ttf", 24);
     if (data->font == NULL) {
         fprintf(stderr, "Não foi possível carregar a fonte: %s", TTF_GetError());
@@ -122,8 +132,9 @@ GameData* GameInit() {
         fprintf(stderr, "Não foi possível carregar a imagem da rede: %s", SDL_GetError());
         return 0;
     }
-    data->net = SDL_CreateTextureFromSurface(data->renderer, surface);
+    data->netTexture = SDL_CreateTextureFromSurface(data->renderer, surface);
     SDL_FreeSurface(surface);
+    data->net = (Line2D){(Vector2){-15, 98}, (Vector2){8, -137}};
 
     data->camera.position = (Vector2){ 0, 0};
     data->camera.zoom = 1;
@@ -134,6 +145,13 @@ GameData* GameInit() {
     data->ball.z = PIXELS_PER_METER * 5;
     data->ball.zVelocity = 0;
     data->ball.animator = AnimatorCreate();
+    surface = SDL_LoadBMP("ball_cursor.bmp");
+    if (surface == NULL) {
+        fprintf(stderr, "Não foi possível carregar a imagem da mira da bola: %s", SDL_GetError());
+        return 0;
+    }
+    data->ball.projection_texture = SDL_CreateTextureFromSurface(data->renderer, surface);
+    SDL_FreeSurface(surface);
     AnimatorAddAnimation(data->ball.animator, AnimationCreate("ball.bmp", (Vector2){15, 15}));
     AnimatorGetAnimation(data->ball.animator, 0)->fps = 18;
 
@@ -240,9 +258,6 @@ void GameInput() {
         }
     }
 
-    if (GameIsKeyDown(SDL_SCANCODE_ESCAPE))
-        data->shouldQuit = 1;
-
     int notWithController = 0;
     for (int i = 0; i < MAX_PLAYER_COUNT; i++)
     {
@@ -254,11 +269,6 @@ void GameInput() {
 
     if (GameIsKeyDown(SDL_SCANCODE_ESCAPE))
         data->paused = !data->paused;
-    if (GameIsKeyDown(SDL_SCANCODE_R))
-    {
-        data->ball.position = Vector2Add(PlayerGetCenter(GameGetPlayer(0)), (Vector2){0, PIXELS_PER_METER*2});
-        data->ball.velocity = (Vector2){ 0, 0 };
-    }
 }
 
 void GameProcess(double dt) {
@@ -266,7 +276,8 @@ void GameProcess(double dt) {
     b->position.x += b->velocity.x * dt;
     b->position.y += b->velocity.y * dt;
 
-    b->zVelocity -= 11.0f * PIXELS_PER_METER * (float)dt;
+    b->zVelocity -= 9.0f * PIXELS_PER_METER * (float)dt;
+    b->z += b->zVelocity * dt;
 
     if (b->z <= 0) {
         b->z = 0;
@@ -288,23 +299,40 @@ void GameProcess(double dt) {
 
 }
 
+void BallRender()
+{
+    Vector2 projectedBallPosition = (Vector2){data->ball.position.x, data->ball.position.y + data->ball.z};
+    Vector2 size = (Vector2){data->ball.radius * 2, data->ball.radius * 2};
+    CameraRenderAnimator(&data->camera, data->ball.animator, (Vector2){projectedBallPosition.x-size.x/2, projectedBallPosition.y+size.y/2}, size);
+}
+void BallAimRender()
+{
+    Vector2 size = (Vector2){15, 15};
+    CameraRenderTexture(&data->camera, data->ball.projection_texture, (Vector2){data->ball.position.x-size.x/2, data->ball.position.y+size.y/2}, size);
+}
+
 void GameRender(double dt, double fps) {
     SDL_Renderer* renderer = data->renderer;
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
     SDL_RenderClear(renderer);
+    SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
 
-    //CameraRenderTexture(&data->camera, data->background, (Vector2){-data->screenSize.x/2, data->screenSize.y/2}, (Vector2){data->screenSize.x, data->screenSize.y});
     CameraRenderTexture(&data->camera, data->background, (Vector2){-320, 180}, (Vector2){640, 360});
-    //Vector2 netSize = (Vector2){data->screenSize.x * 0.1, data->screenSize.y * 0.9};
-    //CameraRenderTexture(&data->camera, data->net, (Vector2){-netSize.x/2, netSize.y/2 - (netSize.y*0.05)}, netSize);
-    CameraRenderTexture(&data->camera, data->net, (Vector2){-17, 145}, (Vector2){34, 320});
+    BallAimRender();
 
-    SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xff);
-    CameraRenderAnimator(&data->camera, data->ball.animator, data->ball.position, (Vector2){data->ball.radius * 2, data->ball.radius * 2});
+    //pedro: Fazer desse jeito significa que talvez a bola seja renderizada duas vezes, mas é mais simples
+    if (!PointLeftOfLine(data->net, data->ball.position))
+        BallRender();
+
+    CameraRenderTexture(&data->camera, data->netTexture, (Vector2){-17, 145}, (Vector2){34, 320});
+
+    if (PointLeftOfLine(data->net, data->ball.position) || data->ball.z >= PIXELS_PER_METER * 2)
+    {
+        BallRender();
+    }
 
     for (int i = 0; i < MAX_PLAYER_COUNT; i++)
     {
-        SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
         Player* p = GameGetPlayer(i);
         if (!p->enabled)
             continue;
@@ -313,6 +341,10 @@ void GameRender(double dt, double fps) {
     }
 
     #ifdef DEBUG
+    SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xff);
+    CameraRenderLine(&data->camera, data->net, renderer);
+    #endif
+
     int len = snprintf(NULL, 0, "FPS: %.0f", fps);
     char* str = (char*)malloc(len + 1);
     snprintf(str, len + 1, "FPS: %.0f", fps);
@@ -336,7 +368,6 @@ void GameRender(double dt, double fps) {
     SDL_DestroyTexture(texture);
     free(str);
     */
-    #endif
 
     SDL_RenderPresent(renderer);
 }

@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
         GameInput();
         if (!GameGetData()->paused)
         {
-            GameProcess(deltaTime);
+            GameProcess(deltaTime * GameGetTimeScale());
         }
         GameRender(deltaTime, fps);
 

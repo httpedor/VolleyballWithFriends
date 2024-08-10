@@ -38,6 +38,7 @@ Vector2 Vector2Normalize(Vector2 a); //deixa um vetor de 0 a 1
 Vector2 Vector2Lerp(Vector2 a, Vector2 b, double t); //linear interpolate de (0,0) 
 /*(0, 0) -> (100, 100)
 t = 0.5 (50, 50)*/
+Vector2 Vector2Reflect(Vector2 v, Vector2 normal);
 
 
 Vector2 Rect2DCenter(Rect2D r);
@@ -45,6 +46,7 @@ Vector2 Rect2DCenter(Rect2D r);
 bool LineLineIntersection(Line2D l1, Line2D l2, Vector2* intersectionPoint);
 bool LinePointIntersection(Line2D l, Vector2 p, Vector2* intersectionPoint);
 bool LineCircleIntersection(Line2D l, Circle c, Vector2* intersectionPoint);
+bool PointLeftOfLine(Line2D l, Vector2 p);
 bool AABBLineIntersection(AABB aabb, Line2D l, Vector2* intersectionPoint);
 bool AABBPointIntersection(AABB aabb, Vector2 p);
 bool AABBAABBIntersection(AABB a, AABB b);

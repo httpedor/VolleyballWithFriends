@@ -1,5 +1,6 @@
 #include "game_math.h"
 #include "math.h"
+#include "game.h"
 
 double Lerp(double a, double b, double t)
 {
@@ -58,6 +59,18 @@ Vector2 Vector2Normalize(Vector2 a)
 
     return Vector2Div(a, Vector2Length(a));
 }
+//Pra colisão
+Vector2 Vector2Reflect(Vector2 v, Vector2 normal) {
+    // Calculate the dot product of the vector and the normal
+    float dotProduct = v.x * normal.x + v.y * normal.y;
+
+    // Reflect the vector along the normal
+    Vector2 reflected;
+    reflected.x = v.x - 2.0f * dotProduct * normal.x;
+    reflected.y = v.y - 2.0f * dotProduct * normal.y;
+
+    return reflected;
+}
 
 Vector2 Rect2DCenter(Rect2D r)
 {
@@ -65,7 +78,7 @@ Vector2 Rect2DCenter(Rect2D r)
 }
 
 
-// Todo código daqui pra baixo foi adaptado(roubad0) do meu Geometry.cs do meu projeto de RPG
+//pedro: Todo código daqui pra baixo foi adaptado(roubad0) do meu Geometry.cs do meu projeto de RPG
 
 bool LineLineIntersection(Line2D l1, Line2D l2, Vector2* intersectionPoint)
 {
@@ -73,7 +86,7 @@ bool LineLineIntersection(Line2D l1, Line2D l2, Vector2* intersectionPoint)
     Vector2 dir2 = Vector2Sub(l2.end, l2.start);
 
     float determinant = dir1.x * dir2.y - dir1.y * dir2.x;
-    if (abs(determinant) < 0.0001f) // Linhas são paralelas
+    if (fabs(determinant) < 0.0001f) // Linhas são paralelas
     {
         return false;
     }
@@ -133,18 +146,34 @@ bool LineCircleIntersection(Line2D l, Circle c, Vector2* intersectionPoint)
     return false;
 }
 
+//pedro: Menos esse, esse não foi adaptado, eu tirei de https://stackoverflow.com/questions/1560492/how-to-tell-whether-a-point-is-to-the-right-or-left-side-of-a-line
+bool PointLeftOfLine(Line2D l, Vector2 p)
+{
+    Vector2 a = l.start;
+    Vector2 b = l.end;
+    Vector2 c = p;
+    return (b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x) < 0;
+}
+
 bool AABBLineIntersection(AABB aabb, Line2D l, Vector2* intersectionPoint)
 {
     // Isso é burro, mas é mais fácil de fazer e eu to usando C, então vai ser rápido de qlq jeito
+    // 09/08 01:00 pedro: eu to a tipo 2 horas tentando fazer isso funcionar, e agora que eu lembrei que eu tive a brilhante ideia de inverter o eixo y porquê
+    // "urr durr o y é pra cima então eu vou inverter a camera hahaha", mas minha memoria muscular de programador de jogos é mais forte e 
+    // fez eu digitar aabb.y + aabb.h, quando na verdade agora é aabb.y - aabb.h.
     Line2D lines[4] = {
         {aabb.x, aabb.y, aabb.x + aabb.w, aabb.y},
-        {aabb.x + aabb.w, aabb.y, aabb.x + aabb.w, aabb.y + aabb.h},
-        {aabb.x + aabb.w, aabb.y + aabb.h, aabb.x, aabb.y + aabb.h},
-        {aabb.x, aabb.y + aabb.h, aabb.x, aabb.y}
+        {aabb.x, aabb.y, aabb.x, aabb.y - aabb.h},
+        {aabb.x + aabb.w, aabb.y, aabb.x + aabb.w, aabb.y - aabb.h},
+        {aabb.x, aabb.y - aabb.h, aabb.x + aabb.w, aabb.y - aabb.h}
     };
 
     for (int i = 0; i < 4; i++)
     {
+        if (GameIsKeyDown(SDL_SCANCODE_J))
+        {
+            int j = 32;
+        }
         if (LineLineIntersection(lines[i], l, intersectionPoint))
             return true;
     }

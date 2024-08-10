@@ -3,12 +3,16 @@
 #include "game.h"
 #include <stdio.h>
 
+#define DEBUG
+
+const Vector2 PLAYER_SIZE = {28, 36};
+
 void PlayerInit(Player* p, int id)
 {
     p->id = id;
     p->controller = NULL;
     p->enabled = false;
-    p->position.x = id % 2 == 0 ? -30 : 30;
+    p->position.x = ((id % 2) == 0) ? -30 : 30;
     p->position.y = 10;
 
     p->velocity.x = 0;
@@ -21,6 +25,8 @@ void PlayerInit(Player* p, int id)
     p->totalStrength = 20;
     p->armLength = PIXELS_PER_METER * 0.6;
     p->animator = AnimatorCreate();
+
+    p->collider = (AABB){p->position.x, p->position.y, PLAYER_SIZE.x-5, PLAYER_SIZE.y};
 
     Animation* idle = AnimationCreate("player/playerIdle.bmp", (Vector2){32, 43});
     idle->fps = 18;
@@ -51,6 +57,12 @@ int PlayerInput(Player* p, int notWithController)
                 jumping = true;
             if (GameIsKeyDown(SDL_SCANCODE_F))
                 PlayerSpike(p);
+            if (GameIsKeyDown(SDL_SCANCODE_R))
+            {
+                GameGetBall()->position = p->position;
+                p->debug = GameGetBall()->position;
+                GameGetBall()->z = 40;
+            }
         }
         else if (notWithController == 1)
         {
@@ -100,8 +112,6 @@ int PlayerInput(Player* p, int notWithController)
 
 void PlayerUpdate(Player* p, double dt) //fisica do jogador
 {
-    Vector2 oldPos = p->position;
-
     float maxMoveSpeed = 6.5 * PIXELS_PER_METER;
 
 
@@ -120,6 +130,8 @@ void PlayerUpdate(Player* p, double dt) //fisica do jogador
     p->position.y += p->velocity.y * dt;
     p->z += p->zVelocity * dt;
 
+    p->collider.x = p->position.x - p->collider.w/2;
+    p->collider.y = p->position.y + p->collider.h/2;
 
     float triggerChange = p->deltaTrigger * dt * 200;
     p->triggerStrength = SDL_clamp(p->triggerStrength + triggerChange, 0, 100);
@@ -129,25 +141,39 @@ void PlayerUpdate(Player* p, double dt) //fisica do jogador
         p->zVelocity = 0;
     }
 
+    /* pedor: CODIGO ANTIGO DE COLISÃO COM A REDE
     if (oldPos.x <= -15 && p->position.x > -25)
         p->position.x = -15;
     if (oldPos.x >= 15 && p->position.x < 25)
         p->position.x = 15;
     
     if (p->position.x >= -15)
-        p->position.x = -30; //FAIXA DE VALORES ERA O PROBLEMA
-        //falar com o pedro sobre o seguinte, o B.O. ali era a faixa de valores
+        p->position.x = -30; //vitor: FAIXA DE VALORES ERA O PROBLEMA
+        //vitor: falar com o pedro sobre o seguinte, o B.O. ali era a faixa de valores
         // agora como vamos organizar é outros 500
+    */
+    // pedro: CODIGO NOVO DE COLISÃO COM A REDE
+    Vector2 intersectionPoint;
+    if (AABBLineIntersection(p->collider, GameGetData()->net, &intersectionPoint))
+    {
+        bool isLeft = PointLeftOfLine(GameGetData()->net, p->position);
+        p->debug = intersectionPoint;
+        //pedro: Olha, eu ja fiz muito codigo feio e gambiarra, mas isso aqui é de outro nivel
+        //isso usa o fato que a gente sabe que o jogador só vai colidir com a rede e a gente sabe que a rede é vertical
+        p->position.x -= ((PLAYER_SIZE.x/2.0f) - SDL_fabs(p->position.x - intersectionPoint.x)) * (isLeft ? 1 : -1);
+    }
 
     if (p->position.y >= 100)
-        p->position.y = 95;
+        p->position.y = 100;
 
     if (p->position.y <= -160)
-        p->position.y = -155;
+        p->position.y = -160;
 
-    if (p-> position.x <= -330)
-        p-> position.x = -320;
-    printf("%f, %f\n", p->position.x, p->position.y);
+    if (p->position.x <= -330)
+        p->position.x = -330;
+
+    if (p->position.x >= 300)
+        p->position.x = 300;
 
     //Make the player sprite face the direction of movement
     if (p->velocity.x > 0)
@@ -162,15 +188,12 @@ void PlayerUpdate(Player* p, double dt) //fisica do jogador
         AnimatorSetCurrentAnimationIndex(p->animator, 0);
 
     AnimatorUpdate(p->animator, dt);
-    //fazer um if pra bloquear a barreira 
-    /*if (p->position.x != -320->320
-    p->position.x = -319->319 
-*/
 }
 
 void PlayerRender(Player* p)
 {
-    CameraRenderAnimator(GameGetCamera(), p->animator, p->position, (Vector2){32, 43});
+    Vector2 projectedPosition = Vector2Add(Vector2Add(p->position, (Vector2){-PLAYER_SIZE.x/2, PLAYER_SIZE.y/2}), (Vector2){0, p->z});
+    CameraRenderAnimator(GameGetCamera(), p->animator, projectedPosition, PLAYER_SIZE);
     if (p->triggerStrength != 0)
     {
         const float barHeight = 25;
@@ -181,6 +204,17 @@ void PlayerRender(Player* p)
         CameraRenderRectOutlineF(GameGetCamera(), maxStrength, GameGetData()->renderer);
         CameraRenderRectF(GameGetCamera(), currentStrength, GameGetData()->renderer);
     }
+    #ifdef DEBUG
+    //Godot my beloved que saudade
+    SDL_SetRenderDrawBlendMode(GameGetData()->renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(GameGetData()->renderer, 0x00, 0xff, 0xff, 0x66);
+    CameraRenderRect(GameGetCamera(), p->collider, GameGetData()->renderer);
+    SDL_SetRenderDrawColor(GameGetData()->renderer, 0xff, 0x00, 0xff, 0x66);
+    CameraRenderRect(GameGetCamera(), (Rect2D){p->position.x, p->position.y, 2, 2}, GameGetData()->renderer);
+    SDL_SetRenderDrawColor(GameGetData()->renderer, 0xff, 0x00, 0x00, 0x66);
+    CameraRenderCircle(GameGetCamera(), p->debug, 3, GameGetData()->renderer);
+    SDL_SetRenderDrawBlendMode(GameGetData()->renderer, SDL_BLENDMODE_NONE);
+    #endif
 }
 
 void PlayerRenderAim(Player* p)
@@ -202,7 +236,7 @@ bool PlayerIsOnGround(Player* p)
 
 Vector2 PlayerGetCenter(Player* p)
 {
-    return (Vector2){p->position.x + 16, p->position.y + 43/2};
+    return (Vector2){p->position.x + PLAYER_SIZE.x/2, p->position.y + PLAYER_SIZE.y/2};
 }
 
 void PlayerSpike(Player* p)
