@@ -143,9 +143,10 @@ void PlayerUpdate(Player* p, double dt) //fisica do jogador
 
     /* pedor: CODIGO ANTIGO DE COLISÃO COM A REDE
     if (oldPos.x <= -15 && p->position.x > -25)
-        p->position.x = -15;
+        p->position.x = -14;
     if (oldPos.x >= 15 && p->position.x < 25)
-        p->position.x = 15;
+        p->position.x = 14;
+        printf("%f \n", p->position.x);
     
     if (p->position.x >= -15)
         p->position.x = -30; //vitor: FAIXA DE VALORES ERA O PROBLEMA

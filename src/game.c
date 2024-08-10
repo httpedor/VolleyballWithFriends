@@ -159,7 +159,7 @@ GameData* GameInit() {
         PlayerInit(GameGetPlayer(i), i);
 
     GameGetPlayer(0)->enabled = true;
-    //GameGetPlayer(1)->enabled = true;
+    //GameGetPlayer(1)->enabled = true; //ativar o outro player
 
     for (int i = 0; i < SDL_NumJoysticks(); i++)
     {
