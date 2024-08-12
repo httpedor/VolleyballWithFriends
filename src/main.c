@@ -51,12 +51,12 @@ int main(int argc, char* argv[]) {
             fpsUpdateTime = 0;
         }
 
-        GameInput();
+        GameInput(deltaTime * GameGetTimeScale());
         if (!GameGetData()->paused)
         {
             GameProcess(deltaTime * GameGetTimeScale());
         }
-        GameRender(deltaTime, fps);
+        GameRender(deltaTime * GameGetTimeScale(), fps);
 
         frame++;
         if (deltaTime < 1.0 / (TICK_RATE*2))

@@ -170,10 +170,6 @@ bool AABBLineIntersection(AABB aabb, Line2D l, Vector2* intersectionPoint)
 
     for (int i = 0; i < 4; i++)
     {
-        if (GameIsKeyDown(SDL_SCANCODE_J))
-        {
-            int j = 32;
-        }
         if (LineLineIntersection(lines[i], l, intersectionPoint))
             return true;
     }

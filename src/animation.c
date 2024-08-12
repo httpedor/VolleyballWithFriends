@@ -20,6 +20,9 @@ Animation* AnimationCreate(char* fileName, Vector2 frameSize)
     animation->frameCount = (iframeSize.x / frameSize.x) * (iframeSize.y / frameSize.y);
     animation->currentFrame = 0;
     animation->fps = 24;
+    animation->firstFrame = 0;
+    animation->lastFrame = animation->frameCount - 1;
+    animation->loop = true;
     return animation;
 }
 void AnimationDelete(Animation* animation)
@@ -65,7 +68,12 @@ void AnimatorRemoveAnimation(Animator* animator, Animation* animation)
 }
 void AnimatorSetCurrentAnimationIndex(Animator* animator, int index)
 {
-    animator->currentAnimation = index;
+    int oldIndex = animator->currentAnimation;
+    if (oldIndex != index)
+    {
+        animator->currentAnimation = index;
+        AnimatorGetCurrentAnimation(animator)->currentFrame = AnimatorGetCurrentAnimation(animator)->firstFrame;
+    }
 }
 void AnimatorSetCurrentAnimation(Animator* animator, Animation* animation)
 {
@@ -101,19 +109,25 @@ void AnimatorDelete(Animator* animator, bool deleteAnimations)
 
 void AnimatorUpdate(Animator* animator, double dt)
 {
-    if (animator->animationCount == 0)
+    if (animator->animationCount == 0 || animator->animations[animator->currentAnimation] == NULL || animator->speedScale == 0)
         return;
 
     Animation* current = animator->animations[animator->currentAnimation];
+    if (current->fps == 0)
+        return;
+
     uint32_t currentTime = SDL_GetTicks();
     uint32_t deficit = currentTime - animator->lastFrameTime;
     while(deficit >= 1000 / (current->fps * animator->speedScale))
     {
         animator->lastFrameTime = currentTime;
         current->currentFrame++;
-        if (current->currentFrame >= current->frameCount)
+        if (current->currentFrame > current->lastFrame)
         {
-            current->currentFrame = 0;
+            if (current->loop)
+                current->currentFrame = current->firstFrame;
+            else
+                current->currentFrame = current->lastFrame;
         }
         deficit -= 1000 / (current->fps * animator->speedScale);
     }

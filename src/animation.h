@@ -8,6 +8,9 @@ typedef struct {
     int frameCount;
     Vector2 frameSize;
     int currentFrame;
+    int firstFrame;
+    int lastFrame;
+    bool loop;
     float fps;
 } Animation;
 
