@@ -44,12 +44,17 @@ typedef struct {
     Vector2 velocity; //velocidade
     float zVelocity; // velocidade no ar
 
+    char skinName[64]; //nome da skin
+    bool isReady;
+
     Vector2 debug;
 
     uint32_t BUTTONS[SDL_CONTROLLER_BUTTON_MAX]; // a quanto tempo cada botão foi apertado
 } Player;
 
 void PlayerInit(Player* player, int id);
+
+void PlayerChooseSkin(Player*);
 
 int PlayerInput(Player* player, int keyboardIndex);
 void PlayerUpdate(Player* player, double dt);

@@ -3,6 +3,7 @@
 #include "game.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 //#define DEBUG
 
@@ -36,30 +37,59 @@ void PlayerInit(Player* p, int id)
     p->aim = (Vector2){0, 0};
 
     p->armLength = PIXELS_PER_METER * 1.5;
-    p->animator = AnimatorCreate();
+    p->animator = NULL;
 
     p->collider = (AABB){p->position.x, p->position.y, PLAYER_SIZE.x-5, PLAYER_SIZE.y};
 
-    Animation* idle = AnimationCreate("player/playerIdle.bmp", (Vector2){32, 43});
+    for (int i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++)
+        p->BUTTONS[i] = 0;
+    
+    sprintf(p->skinName, "Default");
+    p->isReady = false;
+}
+
+void PlayerChooseSkin(Player* p)
+{
+    if (p->animator != NULL)
+        AnimatorDelete(p->animator, true);
+
+    p->animator = AnimatorCreate();
+
+    char path[128];
+    int offset = sprintf(path, "player/skins/%s/", p->skinName);
+    strcpy(path + offset, "/playerIdle.bmp");
+    Animation* idle = AnimationCreate(path, (Vector2){32, 43});
     idle->fps = 18;
-    Animation* walkAnim = AnimationCreate("player/playerRun.bmp", (Vector2){32, 43});
+
+    strcpy(path + offset, "/playerRun.bmp");
+    Animation* walkAnim = AnimationCreate(path, (Vector2){32, 43});
     walkAnim->fps = 18;
-    Animation* receptionAnim = AnimationCreate("player/playerReception.bmp", (Vector2){32, 43});
+
+    strcpy(path + offset, "/playerReception.bmp");
+    Animation* receptionAnim = AnimationCreate(path, (Vector2){32, 43});
     receptionAnim->fps = 18;
     receptionAnim->loop = false;
     receptionAnim->lastFrame = 5;
-    Animation* pancakeAnim = AnimationCreate("player/playerSlide.bmp", (Vector2){43, 43});
+
+    strcpy(path + offset, "/playerSlide.bmp");
+    Animation* pancakeAnim = AnimationCreate(path, (Vector2){43, 43});
     pancakeAnim->fps = 18;
     pancakeAnim->loop = false;
-    Animation* serveAnim = AnimationCreate("player/playerServe.bmp", (Vector2){32, 43});
+
+    strcpy(path + offset, "/playerServe.bmp");
+    Animation* serveAnim = AnimationCreate(path, (Vector2){32, 43});
     serveAnim->fps = 18;
     serveAnim->lastFrame = 3;
     serveAnim->loop = false;
-    Animation* spikeAnim = AnimationCreate("player/playerSmash.bmp", (Vector2){32, 50});
+
+    strcpy(path + offset, "/playerSmash.bmp");
+    Animation* spikeAnim = AnimationCreate(path, (Vector2){32, 50});
     spikeAnim->fps = 18;
     spikeAnim->loop = false;
     spikeAnim->firstFrame = 8;
     spikeAnim->lastFrame = 12;
+    
+    strcpy(path + offset, "/playerSmash.bmp");
     Animation* jumpAnim = AnimationCreate("player/playerSmash.bmp", (Vector2){32, 43});
     jumpAnim->fps = 18;
     jumpAnim->loop = false;
@@ -72,9 +102,13 @@ void PlayerInit(Player* p, int id)
     AnimatorAddAnimation(p->animator, serveAnim);
     AnimatorAddAnimation(p->animator, spikeAnim);
     AnimatorAddAnimation(p->animator, jumpAnim);
+}
 
-    for (int i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++)
-        p->BUTTONS[i] = 0;
+void PlayerForceChangeState(Player* p, PlayerState newState)
+{
+    p->state = newState;
+    p->stateStart = SDL_GetTicks();
+    p->triggeredTint = false;
 }
 
 void PlayerTryChangeState(Player* p, PlayerState newState)
@@ -106,13 +140,6 @@ void PlayerTryChangeState(Player* p, PlayerState newState)
         return;
     
     PlayerForceChangeState(p, newState);
-}
-
-void PlayerForceChangeState(Player* p, PlayerState newState)
-{
-    p->state = newState;
-    p->stateStart = SDL_GetTicks();
-    p->triggeredTint = false;
 }
 
 int PlayerInput(Player* p, int notWithController)
@@ -549,7 +576,6 @@ void PlayerUpdate(Player* p, double dt) //fisica do jogador
             {
                 uint32_t hitDiff = SDL_abs(PERFECT_OVERSERVE_DURATION - hitTime);
                 p->spikeStrength = 1 - SDL_clamp((float)hitDiff / 500.0, 0, 1);
-                printf("Time, Str: %d, %f\n", hitTime, p->spikeStrength);
 
                 uint8_t alpha = (uint8_t)Lerp(0.0, 120.0, p->spikeStrength);
                 trailColor &= 0xFFFFFF00;
@@ -610,7 +636,7 @@ void PlayerUpdate(Player* p, double dt) //fisica do jogador
     p->zVelocity -= 20 * PIXELS_PER_METER * dt;
     if (p->state != PLAYER_STATE_PANCAKE)
     {
-        if (PlayerIsOnGround(p))
+        if (PlayerIsOnGround(p) && p->state != PLAYER_STATE_JUMP && p->state != PLAYER_STATE_SERVE)
         {
             p->velocity.x = p->moveDir.x * maxMoveSpeed;
             p->velocity.y = p->moveDir.y * maxMoveSpeed;

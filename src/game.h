@@ -30,6 +30,7 @@ typedef enum {
 typedef struct {
     double deadzoneLeft;
     double deadzoneRight;
+    double volume;
 } Config;
 
 typedef struct {
@@ -67,6 +68,7 @@ typedef struct {
     int lastPlayerToTouchBall;
 
     bool paused;
+    bool started;
     uint64_t deltaTime;
     Player players[4];
     Ball ball;

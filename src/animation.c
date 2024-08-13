@@ -9,7 +9,7 @@ Animation* AnimationCreate(char* fileName, Vector2 frameSize)
     if (surface == NULL)
     {
         free(animation);
-        printf("Error loading image: %s\n", SDL_GetError());
+        printf("Error loading image %s: %s\n", fileName, SDL_GetError());
         return NULL;
     }
     animation->texture = SDL_CreateTextureFromSurface(GameGetData()->renderer, surface);
