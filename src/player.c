@@ -90,7 +90,7 @@ void PlayerChooseSkin(Player* p)
     spikeAnim->lastFrame = 12;
     
     strcpy(path + offset, "/playerSmash.bmp");
-    Animation* jumpAnim = AnimationCreate("player/playerSmash.bmp", (Vector2){32, 43});
+    Animation* jumpAnim = AnimationCreate(path, (Vector2){32, 43});
     jumpAnim->fps = 18;
     jumpAnim->loop = false;
     jumpAnim->lastFrame = 5;
@@ -693,6 +693,11 @@ void PlayerUpdate(Player* p, double dt) //fisica do jogador
 
     if (p->position.x >= X_MAX)
         p->position.x = X_MAX;
+
+    if (p->stamina > 100)
+        p->stamina = 100;
+    if (p->stamina < 0)
+        p->stamina = 0;
 
     //Make the player sprite face the direction of movement
     if (p->velocity.x > 0)

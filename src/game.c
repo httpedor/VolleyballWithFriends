@@ -533,6 +533,11 @@ void GameInput(double dt) {
 
             if (currentState == GAME_STATE_CHARACTER_SELECTION)
             {
+                if (code == SDL_SCANCODE_ESCAPE)
+                {
+                    ChangeState(GAME_STATE_MAINSCREEN);
+                    break;
+                }
                 int notWithControllers = 0;
                 for (int i = 0; i < MAX_PLAYER_COUNT; i++)
                 {
@@ -684,6 +689,7 @@ void GameInput(double dt) {
                         if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A)
                             ready = true;
                         
+                        //sim, isso é burro, mas faltam 8 horas pra entregar e eu não tenho tempo pra fazer um sistema de seleção de personagem decente
                         char names[4][64] = {"Default", "Bruninho", "Strawhat", "Deusniel"};
                         if (left)
                         {
@@ -935,13 +941,29 @@ void GameRender(double dt, double fps) {
                 int height = GameGetScreenSize().y/2 - 40;
                 int x =  (i % 2) * width + 50;
                 int y =  (i / 2) * height + rect.h + 15;
-                //TODO Render player previews
+                
                 SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
                 SDL_RenderDrawRect(renderer, &(SDL_Rect){x, y, width, height});
                 surface = TTF_RenderText_Solid(GameGetData()->font, p->skinName, p->isReady ? (SDL_Color){255, 176, 0, 255} : (SDL_Color){255, 255, 255, 255});
                 texture = SDL_CreateTextureFromSurface(GameGetData()->renderer, surface);
                 rect = (SDL_Rect){x + width/2 - surface->w/2, y + height - surface->h, surface->w, surface->h};
                 SDL_RenderCopy(GameGetData()->renderer, texture, NULL, &rect);
+                SDL_FreeSurface(surface);
+                SDL_DestroyTexture(texture);
+                char skinPath[128];
+                sprintf(skinPath, "player/skins/%s/playerIdle.bmp", p->skinName);
+                //sim, eu sei, "uurr dur vc nao devia ler spritesheets inteiras e descartar ela todo frame, usa um cache", counterpoint: são 09:44 do dia da entrega e eu to virado!
+                surface = SDL_LoadBMP(skinPath);
+                if (surface == NULL)
+                {
+                    fprintf(stderr, "Não foi possível carregar a imagem da skin: %s", SDL_GetError());
+                    return;
+                }
+                texture = SDL_CreateTextureFromSurface(GameGetData()->renderer, surface);
+                SDL_RenderCopy(GameGetData()->renderer, texture, &(SDL_Rect){0, 0, 32, 43}, &(SDL_Rect){x + width/2 - 24, y + height/2 - 32, 48, 64});
+
+                SDL_FreeSurface(surface);
+                SDL_DestroyTexture(texture);
             }
             break;
         }
