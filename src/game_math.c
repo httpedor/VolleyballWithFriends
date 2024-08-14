@@ -61,10 +61,8 @@ Vector2 Vector2Normalize(Vector2 a)
 }
 //Pra colisão
 Vector2 Vector2Reflect(Vector2 v, Vector2 normal) {
-    // Calculate the dot product of the vector and the normal
     float dotProduct = v.x * normal.x + v.y * normal.y;
 
-    // Reflect the vector along the normal
     Vector2 reflected;
     reflected.x = v.x - 2.0f * dotProduct * normal.x;
     reflected.y = v.y - 2.0f * dotProduct * normal.y;

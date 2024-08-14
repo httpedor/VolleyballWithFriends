@@ -81,7 +81,7 @@ void AnimatorSetCurrentAnimation(Animator* animator, Animation* animation)
     {
         if (animator->animations[i] == animation)
         {
-            animator->currentAnimation = i;
+            AnimatorSetCurrentAnimationIndex(animator, i);
             return;
         }
     }

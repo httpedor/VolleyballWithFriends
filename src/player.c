@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-//#define DEBUG
+#define DEBUG
 
 const Vector2 PLAYER_SIZE = {28, 36};
 const uint32_t PERFECT_BUMP_DURATION = 1000;
